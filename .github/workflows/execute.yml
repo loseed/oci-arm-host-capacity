@@ -15,27 +15,28 @@ jobs:
           php-version: '8.1'
       - name: Install Dependencies
         run: composer install
+      
       - name: Create Key File
         run: |
-          echo "${{ secrets.OCI_KEY_FILE }}" > private_key.pem
+          cat <<EOF > private_key.pem
+          ${{ secrets.OCI_KEY_FILE }}
+          EOF
           chmod 600 private_key.pem
+
       - name: Run Snipe Script
-        run: |
-          # This part cleans the secrets of any hidden spaces or newlines
-          export OCI_USER_ID=$(echo "${{ secrets.OCI_USER_ID }}" | xargs)
-          export OCI_TENANCY_ID=$(echo "${{ secrets.OCI_TENANCY_ID }}" | xargs)
-          export OCI_REGION=$(echo "${{ secrets.OCI_REGION }}" | xargs)
-          export OCI_KEY_FINGERPRINT=$(echo "${{ secrets.OCI_FINGERPRINT }}" | xargs)
-          export OCI_SUBNET_ID=$(echo "${{ secrets.OCI_SUBNET_ID }}" | xargs)
-          export OCI_IMAGE_ID=$(echo "${{ secrets.OCI_IMAGE_ID }}" | xargs)
-          export OCI_AVAILABILITY_DOMAIN=$(echo "${{ secrets.OCI_AVAILABILITY_DOMAIN }}" | xargs)
-          export OCI_SSH_PUBLIC_KEY=$(echo "${{ secrets.OCI_SSH_PUBLIC_KEY }}" | xargs)
-          
-          export OCI_PRIVATE_KEY_FILENAME="./private_key.pem"
-          export OCI_COMPARTMENT_ID="$OCI_TENANCY_ID"
-          export OCI_SHAPE="VM.Standard.A1.Flex"
-          export OCI_OCPU=4
-          export OCI_MEMORY_IN_GBS=24
-          export OCI_BOOT_VOLUME_SIZE_IN_GBS=100
-          
-          php index.php
+        run: php index.php
+        env:
+          OCI_USER_ID: ${{ secrets.OCI_USER_ID }}
+          OCI_TENANCY_ID: ${{ secrets.OCI_TENANCY_ID }}
+          OCI_REGION: ${{ secrets.OCI_REGION }}
+          OCI_KEY_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY_FILENAME: ./private_key.pem
+          OCI_SSH_PUBLIC_KEY: ${{ secrets.OCI_SSH_PUBLIC_KEY }}
+          OCI_SUBNET_ID: ${{ secrets.OCI_SUBNET_ID }}
+          OCI_IMAGE_ID: ${{ secrets.OCI_IMAGE_ID }}
+          OCI_AVAILABILITY_DOMAIN: ${{ secrets.OCI_AVAILABILITY_DOMAIN }}
+          OCI_COMPARTMENT_ID: ${{ secrets.OCI_TENANCY_ID }}
+          OCI_SHAPE: VM.Standard.A1.Flex
+          OCI_OCPU: 4
+          OCI_MEMORY_IN_GBS: 24
+          OCI_BOOT_VOLUME_SIZE_IN_GBS: 100
